@@ -23,25 +23,26 @@ pipeline {
             }
         }
 
-        stage('Deploy to EC2') {
-            steps {
-                sh """
-                ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} '
-                    rm -rf ${APP_DIR}
-                    mkdir -p ${APP_DIR}
-                '
+       stage('Deploy to EC2') {
+    steps {
+        sshagent(['ec2-key']) {
+            sh """
+            ssh -o StrictHostKeyChecking=no ec2-user@13.233.179.126 '
+                rm -rf /home/ec2-user/backend-app
+                mkdir -p /home/ec2-user/backend-app
+            '
 
-                scp -i ${KEY_PATH} -o StrictHostKeyChecking=no -r * ${EC2_USER}@${EC2_HOST}:${APP_DIR}
+            scp -o StrictHostKeyChecking=no -r * ec2-user@13.233.179.126:/home/ec2-user/backend-app
 
-                ssh -i ${KEY_PATH} -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} '
-                    cd ${APP_DIR}
-                    npm install
-                    pm2 delete backend-app || true
-                    pm2 start app.js --name backend-app
-                    pm2 save
-                '
-                """
-            }
+            ssh -o StrictHostKeyChecking=no ec2-user@13.233.179.126 '
+                cd /home/ec2-user/backend-app
+                npm install
+                pm2 delete backend-app || true
+                pm2 start app.js --name backend-app
+                pm2 save
+            '
+            """
         }
     }
+}
 }
