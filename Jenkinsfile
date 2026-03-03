@@ -11,7 +11,7 @@ pipeline {
  
         stage('Clone Repository') { 
             steps { 
-                git 'https://github.com/nagaveni12345/jenkins-ci-cd-backend.git' 
+                git 'https://github.com/YOUR-USERNAME/YOUR-REPO.git' 
             } 
         } 
  
@@ -36,5 +36,3 @@ pipeline {
             } 
         } 
     }
-}
-    
