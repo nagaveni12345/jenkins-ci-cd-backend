@@ -8,12 +8,16 @@ pipeline {
     } 
  
     stages { 
- 
-        stage('Clone Repository') { 
-            steps { 
-                git 'https://github.com/YOUR-USERNAME/YOUR-REPO.git' 
-            } 
-        } 
+
+stage('Clone Repository') {
+    steps {
+        git branch: 'main',
+            url: 'https://github.com/nagaveni12345/jenkins-ci-cd-backend.git',
+            credentialsId: 'git-hub'
+    }
+}
+        
+            
  
         stage('Deploy Application') { 
             steps { 
