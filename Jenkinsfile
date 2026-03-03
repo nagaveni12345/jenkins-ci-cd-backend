@@ -1,39 +1,38 @@
-pipeline {
-    agent any
-
-    environment {
-        SERVER_IP = "YOUR_SERVER_IP"
-        SERVER_USER = "ubuntu"
-        APP_NAME = "backend-app"
+pipeline { 
+    agent any 
+ 
+    environment { 
+        EC2_USER = "ec2-user" 
+        EC2_HOST = "<YOUR-APP-EC2-PRIVATE-IP>" 
+        APP_DIR = "/home/ec2-user/backend-app" 
+    } 
+ 
+    stages { 
+ 
+        stage('Clone Repository') { 
+            steps { 
+                git 'https://github.com/nagaveni12345/jenkins-ci-cd-backend.git' 
+            } 
+        } 
+ 
+        stage('Deploy Application') { 
+            steps { 
+                sh ''' 
+                ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} " 
+                rm -rf ${APP_DIR} 
+                mkdir -p ${APP_DIR} 
+                " 
+ 
+                scp -r * ${EC2_USER}@${EC2_HOST}:${APP_DIR} 
+ 
+                ssh ${EC2_USER}@${EC2_HOST} " 
+                cd ${APP_DIR} 
+                npm install 
+                pm2 delete backend-app || true 
+                pm2 start app.js --name backend-app 
+                pm2 save 
+                " 
+                ''' 
+            } 
+        } 
     }
-
-    stages {
-
-        stage('Checkout') {
-            steps {
-                git branch: 'main',
-                    url: 'https://github.com/nagaveni12345/jenkins-ci-cd-backend.git'
-            }
-        }
-
-        stage('Build') {
-            steps {
-                sh 'mvn clean package -DskipTests'
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                sshagent(['server-ssh-key']) {
-                    sh """
-                    scp target/*.jar $SERVER_USER@$SERVER_IP:/home/ubuntu/$APP_NAME.jar
-                    ssh $SERVER_USER@$SERVER_IP '
-                        pkill -f $APP_NAME.jar || true
-                        nohup java -jar /home/ubuntu/$APP_NAME.jar > app.log 2>&1 &
-                    '
-                    """
-                }
-            }
-        }
-    }
-}
