@@ -1,6 +1,7 @@
 pipeline {
     agent any
 
+    
     environment {
         EC2_HOST = "13.233.179.126"        // Your EC2 Public IP
         EC2_USER = "ec2-user"             // Change to ubuntu if needed
